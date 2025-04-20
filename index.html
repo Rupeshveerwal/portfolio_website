@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rupesh Veerwal | Research Analyst & Programmer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap');
+        
+        /* Add theme variables */
+        :root {
+            --primary-color: #00ff41; /* Default green */
+            --primary-rgb: 0, 255, 65;
+            --bg-color: #000;
+        }
+        
+        /* Theme classes */
+        .theme-green { 
+            --primary-color: #00ff41; 
+            --primary-rgb: 0, 255, 65;
+        }
+        
+        .theme-blue {
+            --primary-color: #00a8ff;
+            --primary-rgb: 0, 168, 255;
+        }
+        
+        .theme-red {
+            --primary-color: #ff2e2e;
+            --primary-rgb: 255, 46, 46;
+        }
+        
+        body {
+            font-family: 'Ubuntu Mono', monospace;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.05;
+        }
+        
+        .glow {
+            text-shadow: 0 0 1px var(--primary-color), 0 0 10px var(--primary-color);
+        }
+        
+        .glow-box {
+            box-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+        }
+        
+        .section-divider {
+            border-top: 1px solid var(--primary-color);
+            border-bottom: 1px solid var(--primary-color);
+            height: 2px;
+            margin: 2rem 0;
+        }
+        
+        .terminal {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 1rem;
+            position: relative;
+        }
+        
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .terminal-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .terminal-btn.red {
+            background-color: #ff5f56;
+        }
+        
+        .terminal-btn.yellow {
+            background-color: #ffbd2e;
+        }
+        
+        .terminal-btn.green {
+            background-color: #27c93f;
+        }
+        
+        .cursor {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; } 
+            50% { opacity: 0; }
+        }
+        
+        .skill-bar {
+            background-color: rgba(var(--primary-rgb), 0.1);
+            height: 20px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .skill-progress {
+            background-color: var(--primary-color);
+            height: 100%;
+            transition: width 1s ease-in-out; 
+        }
+        
+        .project-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(var(--primary-rgb), 0.3);
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+        
+        /* Matrix rain effect */
+        canvas {
+            display: block;
+        }
+        
+        #intro-overlay {
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+        
+        #main-content.hidden {
+            display: none;
+        }
+        
+        #matrix {
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+        
+        /* Theme selector */
+        .theme-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .theme-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .theme-btn.green { background-color: #00ff41; }
+        .theme-btn.blue { background-color: #00a8ff; }
+        .theme-btn.red { background-color: #ff2e2e; }
+    </style>
+</head>
+<body class="theme-green">
+    <!-- Theme Selector -->
+    <div class="theme-selector">
+        <button class="theme-btn green" onclick="changeTheme('green')"></button>
+        <button class="theme-btn blue" onclick="changeTheme('blue')"></button>
+        <button class="theme-btn red" onclick="changeTheme('red')"></button>
+    </div>
+
+    <!-- Intro Overlay -->
+    <div id="intro-overlay" class="fixed inset-0 bg-black flex items-center justify-center">
+        <div class="text-center">
+            <h1 id="intro-text" class="text-4xl md:text-6xl font-bold text-green-500 mb-4"></h1>
+            <div id="intro-subtext" class="text-xl text-green-500"></div>
+        </div>
+    </div>
+
+    <!-- Matrix Rain Background -->
+    <canvas id="matrix" class="matrix-bg"></canvas>
+    
+    <!-- Main Container -->
+    <div id="main-content" class="container mx-auto px-4 py-8 max-w-6xl hidden">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-12">
+            <div class="text-center md:text-left mb-6 md:mb-0">
+                <h1 class="text-4xl md:text-5xl font-bold glow mb-2">Rupesh Veerwal</h1>
+                <div class="terminal inline-block px-4 py-2">
+                    <div class="terminal-header">
+                        <div class="terminal-btn red"></div>
+                        <div class="terminal-btn yellow"></div>
+                        <div class="terminal-btn green"></div>
+                    </div>
+                    <span class="text-xl">Research Analyst & Programmer</span>
+                    <span class="cursor">_</span>
+                </div>
+            </div> 
+            
+            <div class="flex space-x-4"> 
+                <a href="#" class="glow hover:text-white transition">
+                    <i class="fab fa-github fa-2x"></i>
+                </a>
+                <a href="#" class="glow hover:text-white transition">
+                    <i class="fab fa-linkedin fa-2x"></i>
+                </a>
+                <a href="#" class="glow hover:text-white transition">
+                    <i class="fab fa-twitter fa-2x"></i>
+                </a>
+                <a href="#" class="glow hover:text-white transition">
+                    <i class="fas fa-envelope fa-2x"></i>
+                </a>
+            </div>
+        </header>
+        
+        <!-- About Section -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold drop-shadow-[0_0_12px_black]  mb-6 flex items-center">
+                <span class="mr-2">$</span> about_me
+            </h2>
+            <div class="terminal p-6 mb-8">
+                <p class="mb-4">Hello, World!I'm Rupesh Veerwal, a passionate Research Analyst and Programmer with expertise in data science, statistical analysis, and software development.</p>
+                <p class="mb-4">My journey in the digital realm began when I first discovered the power of code to transform raw data into meaningful insights. Since then, I've been on a mission to decode complex problems and build elegant solutions.</p>
+                <p>When I'm not analyzing datasets or writing code, you can find me exploring the latest in AI research, contributing to open-source projects, or mentoring aspiring developers.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="terminal p-6 glow-box">
+                    <h3 class="text-xl font-bold mb-3">Research</h3>
+                    <p>Methodical analysis of complex data sets to uncover patterns, trends, and actionable insights that drive decision-making.</p>
+                </div>
+                <div class="terminal p-6 glow-box">
+                    <h3 class="text-xl font-bold mb-3">Programming</h3>
+                    <p>Building robust, efficient software solutions using modern technologies and best practices in software engineering.</p>
+                </div>
+                <div class="terminal p-6 glow-box">
+                    <h3 class="text-xl font-bold mb-3">Data Science</h3>
+                    <p>Transforming raw data into meaningful information through statistical modeling, machine learning, and visualization.</p>
+                </div>
+            </div>
+        </section>
+        
+        <div class="section-divider"></div>
+        
+        <!-- Skills Section -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold drop-shadow-[0_0_12px_black] mb-6 flex items-center">
+                <span class="mr-2">$</span> skills_matrix
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Technical Skills</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>Python</span>
+                                <span>90%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>R</span>
+                                <span>85%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>SQL</span>
+                                <span>80%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>JavaScript</span>
+                                <span>75%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Analytical Skills</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>Data Analysis</span>
+                                <span>95%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>Statistical Modeling</span>
+                                <span>90%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>Machine Learning</span>
+                                <span>85%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>Data Visualization</span>
+                                <span>80%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 80%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <div class="section-divider"></div>
+        
+        <!-- Projects Section -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold drop-shadow-[0_0_12px_black] mb-6 flex items-center">
+                <span class="mr-2">$</span> project_archive
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="project-card terminal p-6">
+                    <h3 class="text-xl font-bold mb-2">Market Trend Analyzer</h3>
+                    <p class="text-sm mb-4">Python, Pandas, Matplotlib</p>
+                    <p class="mb-4">A comprehensive tool for analyzing and visualizing financial market trends using historical data.</p>
+                    <a href="#" class="text-sm hover:underline">View Project →</a>
+                </div>
+                
+                <div class="project-card terminal p-6">
+                    <h3 class="text-xl font-bold mb-2">Sentiment Analysis API</h3>
+                    <p class="text-sm mb-4">Python, Flask, NLTK</p>
+                    <p class="mb-4">REST API for performing sentiment analysis on textual data using natural language processing.</p>
+                    <a href="#" class="text-sm hover:underline">View Project →</a>
+                </div>
+                
+                <div class="project-card terminal p-6">
+                    <h3 class="text-xl font-bold mb-2">Data Pipeline Framework</h3>
+                    <p class="text-sm mb-4">Python, Airflow, PostgreSQL</p>
+                    <p class="mb-4">Automated ETL pipeline for processing and transforming large datasets with monitoring capabilities.</p>
+                    <a href="#" class="text-sm hover:underline">View Project →</a>
+                </div>
+                
+                <div class="project-card terminal p-6">
+                    <h3 class="text-xl font-bold mb-2">Research Dashboard</h3>
+                    <p class="text-sm mb-4">R, Shiny, D3.js</p>
+                    <p class="mb-4">Interactive dashboard for exploring and visualizing research findings with dynamic filtering.</p>
+                    <a href="#" class="text-sm hover:underline">View Project →</a>
+                </div>
+                
+                <div class="project-card terminal p-6">
+                    <h3 class="text-xl font-bold mb-2">Algorithmic Trading Bot</h3>
+                    <p class="text-sm mb-4">Python, CCXT, TensorFlow</p>
+                    <p class="mb-4">Machine learning-powered trading bot that executes trades based on predictive models.</p>
+                    <a href="#" class="text-sm hover:underline">View Project →</a>
+                </div>
+                
+                <div class="project-card terminal p-6">
+                    <h3 class="text-xl font-bold mb-2">Data Quality Monitor</h3>
+                    <p class="text-sm mb-4">Python, Great Expectations</p>
+                    <p class="mb-4">Automated system for validating data quality and generating reports on anomalies.</p>
+                    <a href="#" class="text-sm hover:underline">View Project →</a>
+                </div>
+            </div>
+        </section>
+        
+        <div class="section-divider"></div>
+        
+        <!-- Experience Section -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold drop-shadow-[0_0_12px_black] mb-6 flex items-center">
+                <span class="mr-2">$</span> career_log
+            </h2>
+            
+            <div class="space-y-8">
+                <div class="terminal p-6">
+                    <div class="flex flex-col md:flex-row justify-between mb-2">
+                        <h3 class="text-xl font-bold">Senior Research Analyst</h3>
+                        <span class="text-sm">2021 - Present</span>
+                    </div>
+                    <p class="text-sm mb-2">Quantitative Insights Inc.</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Led a team of analysts in developing predictive models for financial markets</li>
+                        <li>Designed and implemented automated data processing pipelines</li>
+                        <li>Published research papers on novel quantitative methods</li>
+                    </ul>
+                </div>
+                
+                <div class="terminal p-6">
+                    <div class="flex flex-col md:flex-row justify-between mb-2">
+                        <h3 class="text-xl font-bold">Data Scientist</h3>
+                        <span class="text-sm">2018 - 2021</span>
+                    </div>
+                    <p class="text-sm mb-2">Analytics Solutions Ltd.</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Developed machine learning models for customer segmentation</li>
+                        <li>Created interactive dashboards for business intelligence</li>
+                        <li>Optimized data processing workflows reducing runtime by 40%</li>
+                    </ul>
+                </div>
+                
+                <div class="terminal p-6">
+                    <div class="flex flex-col md:flex-row justify-between mb-2">
+                        <h3 class="text-xl font-bold">Research Assistant</h3>
+                        <span class="text-sm">2016 - 2018</span>
+                    </div>
+                    <p class="text-sm mb-2">University of Data Science</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Assisted in academic research on statistical methods</li>
+                        <li>Developed software tools for data collection and analysis</li>
+                        <li>Co-authored 3 peer-reviewed publications</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <div class="section-divider"></div>
+        
+        <!-- Contact Section -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold drop-shadow-[0_0_12px_black] mb-6 flex items-center">
+                <span class="mr-2">$</span> contact_sequence
+            </h2>
+            
+            <div class="terminal p-8 text-center">
+                <h3 class="text-2xl font-bold mb-6">Ready to collaborate or just want to chat?</h3>
+                <p class="mb-8">I'm always interested in hearing about new research opportunities, innovative projects, or just discussing the latest in data science and programming.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-4 glow-box">
+                        <i class="fas fa-envelope fa-2x mb-3"></i>
+                        <p>Email me at</p>
+                        <a href="mailto:rupesh@example.com" class="font-bold hover:underline">rupesh@example.com</a>
+                    </div>
+                    <div class="p-4 glow-box">
+                        <i class="fas fa-phone fa-2x mb-3"></i>
+                        <p>Call me at</p>
+                        <a href="tel:+1234567890" class="font-bold hover:underline">+1 (234) 567-890</a>
+                    </div>
+                    <div class="p-4 glow-box">
+                        <i class="fas fa-map-marker-alt fa-2x mb-3"></i>
+                        <p>Find me at</p>
+                        <span class="font-bold">Data City, DS 10101</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer class="text-center py-8">
+            <div class="mb-4">
+                <a href="#" class="mx-2 hover:underline">Home</a>
+                <a href="#" class="mx-2 hover:underline">Projects</a>
+                <a href="#" class="mx-2 hover:underline">Blog</a>
+                <a href="#" class="mx-2 hover:underline">Resume</a>
+            </div>
+            <p>© 2023 Rupesh Veerwal. All systems operational.</p>
+            <p class="text-sm mt-2">Designed with <span class="text-red-500">❤</span> and green code</p>
+        </footer>
+    </div>
+    
+    <!-- Matrix Rain Script -->
+    <script>
+        // Matrix effect
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas to full window size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Characters - taken from the Katakana charset
+        const chars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン";
+        
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        
+        // Array of drops - one per column
+        const drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+        
+        // Drawing the characters
+        function draw() {
+            // Black BG for the canvas
+            // Translucent BG to show trail
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--primary-color');
+            ctx.font = fontSize + 'px monospace';
+            
+            // Loop over drops
+            for (let i = 0; i < drops.length; i++) {
+                // Random character to print
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                
+                // x = i * fontSize, y = value of drops[i] * fontSize
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                // Sending the drop back to the top randomly after it has crossed the screen
+                // Adding randomness to the reset to make the drops scattered on the Y axis
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                // Increment Y coordinate
+                drops[i]++;
+            }
+        }
+        
+        setInterval(draw, 33); 
+        
+        // Resize canvas when window is resized
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Typewriter effect for terminal text
+        const terminalTexts = document.querySelectorAll('.terminal p');
+        terminalTexts.forEach(text => {
+            const originalText = text.textContent;
+            text.textContent = '';
+            
+            let i = 0;
+            const typeWriter = () => {
+                if (i < originalText.length) {
+                    text.textContent += originalText.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, Math.random() * 50 + 20);
+                }
+            };
+            
+            // Start typing after a random delay (0-2s)
+            setTimeout(typeWriter, 3 * 2000);
+        });
+ 
+        // Intro Animation
+        const introText = "Rupesh Veerwal";
+        const introSubtext = "Research Analyst & Programmer";
+        const introOverlay = document.getElementById('intro-overlay');
+        const mainContent = document.getElementById('main-content');
+        const introTextElement = document.getElementById('intro-text');
+        const introSubtextElement = document.getElementById('intro-subtext');
+
+        function typeWriter(text, element, speed = 100) {
+            return new Promise((resolve) => {
+                let i = 0;
+                const type = () => {
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    } else {
+                        resolve();
+                    }
+                };
+                type();
+            });
+        }
+
+        async function playIntro() {
+            // Start with matrix rain
+            const matrixCanvas = document.getElementById('matrix');
+            matrixCanvas.style.opacity = '1';
+            
+            // Type the main text
+            await typeWriter(introText, introTextElement, 100);
+            
+            // Wait a moment
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Type the subtext
+            await typeWriter(introSubtext, introSubtextElement, 50);
+            
+            // Wait a moment
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Fade out intro overlay
+            introOverlay.style.transition = 'opacity 1s ease-out';
+            introOverlay.style.opacity = '0';
+            
+            // Show main content
+            setTimeout(() => {
+                introOverlay.style.display = 'none';
+                mainContent.style.transition = 'opacity 1s ease-out';
+                mainContent.classList.remove('hidden');
+
+                // Start the typewriter effect for terminal text
+                const terminalTexts = document.querySelectorAll('.terminal p');
+                terminalTexts.forEach(text => {
+                    const originalText = text.textContent;
+                    text.textContent = '';
+                    
+                    let i = 0;
+                    const typeWriter = () => {
+                        if (i < originalText.length) {
+                            text.textContent += originalText.charAt(i);
+                            i++;
+                            setTimeout(typeWriter, Math.random() * 50 + 20);
+                        }
+                    };
+                    
+                    setTimeout(typeWriter, Math.random() * 2000);
+                });
+            }, 1000);
+        }
+
+        // Theme changer function
+        function changeTheme(theme) {
+            document.body.className = `theme-${theme}`;
+            
+
+            // Update matrix rain color
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--primary-color');
+            
+            // Save theme preference
+            localStorage.setItem('portfolio-theme', theme);
+        }
+
+        // Load saved theme preference
+        window.addEventListener('load', () => {
+            const savedTheme = localStorage.getItem('portfolio-theme') || 'green';
+            changeTheme(savedTheme);
+            playIntro();
+        });
+    </script>
+</body>
+</html>
